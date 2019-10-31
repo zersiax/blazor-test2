@@ -1,0 +1,91 @@
+@page "/todo"
+
+@if(newTodo == null)
+{
+    <h1>Todo (@FilteredTodos.Count())</h1>
+    <button @onclick="CreateTodo">Create new</button>
+    <div id="filters">
+        <select @onchange="OnFilterChanged">
+            
+            <option value="all">All</option>
+            <option value="completed">Only Completed</option>
+            <option value="unfinished">Only unfinished</option>
+
+        </select>
+    </div>
+    <ul>
+        @foreach (var todo in FilteredTodos)
+        {
+            <li>
+                <input type="checkbox" @bind="todo.IsDone" />
+                <span>@todo.Title </span>
+                <span> @todo.DueDate </span>       
+            </li>
+        }
+    </ul>
+}
+
+
+@if(newTodo != null)
+{
+    <h1>Create new Todo item</h1>
+    <EditForm Model="@newTodo" OnValidSubmit="@AddTodo">
+        <DataAnnotationsValidator />
+        <!-- <ValidationSummary /> -->
+        <br/>
+        <InputText placeholder="Something todo" @bind-Value="@newTodo.Title" />
+        <ValidationMessage For="@(() => newTodo.Title)"/>
+        <br/>
+        <InputTextArea @bind-Value="@newTodo.Content" />
+        <ValidationMessage For="@(() => newTodo.Content)"/>
+        <br />
+        <InputDate @bind-Value="@newTodo.DueDate" />
+        <ValidationMessage For="@(() => newTodo.DueDate)"/>
+        <br/>
+        <button>Add todo</button>
+    </EditForm>
+}
+
+
+@code {
+    public void OnFilterChanged(ChangeEventArgs e) {
+    CurrentFilter = e.Value as string;
+    RebuildList(CurrentFilter);
+        
+    }
+
+    public void RebuildList(string filterVal) {
+
+        switch(filterVal) {
+            case "completed":
+            FilteredTodos = AllTodos.Where(x => x.IsDone).ToList();
+            break;
+
+            case "unfinished":
+            FilteredTodos = AllTodos.Where(x => !x.IsDone).ToList();
+            break;
+            
+            default:
+            FilteredTodos = AllTodos;
+            break;
+
+        }
+    }
+
+    private IList<TodoItem> AllTodos = new List<TodoItem>();
+    private IList<TodoItem> FilteredTodos = new List<TodoItem>();
+    private TodoItem newTodo;
+    private string CurrentFilter;
+    private void CreateTodo(){
+        newTodo = new TodoItem();
+    }
+
+    private void AddTodo()
+    {
+        AllTodos.Add(newTodo);
+        RebuildList(CurrentFilter);
+        newTodo = null;
+    }
+}
+ 
+ 
