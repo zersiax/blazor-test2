@@ -1,4 +1,6 @@
 @page "/todo"
+@using System
+@inject TodosService todosService
 
 @if(newTodo == null)
 {
@@ -48,10 +50,22 @@
 
 
 @code {
+
+    private IList<TodoItem> AllTodos = new List<TodoItem>();
+    private IList<TodoItem> FilteredTodos = new List<TodoItem>();
+    private TodoItem newTodo;
+    private string CurrentFilter;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IEnumerable<TodoItem> todotjes = await todosService.GetTodoItems();
+        AllTodos = todotjes.ToList();
+        RebuildList(CurrentFilter);
+    }
+
     public void OnFilterChanged(ChangeEventArgs e) {
-    CurrentFilter = e.Value as string;
-    RebuildList(CurrentFilter);
-        
+        CurrentFilter = e.Value as string;
+        RebuildList(CurrentFilter);
     }
 
     public void RebuildList(string filterVal) {
@@ -72,10 +86,6 @@
         }
     }
 
-    private IList<TodoItem> AllTodos = new List<TodoItem>();
-    private IList<TodoItem> FilteredTodos = new List<TodoItem>();
-    private TodoItem newTodo;
-    private string CurrentFilter;
     private void CreateTodo(){
         newTodo = new TodoItem();
     }
